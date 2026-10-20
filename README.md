@@ -1,0 +1,1 @@
+# Mini-RAG-Local-AI-with-Ollama
