@@ -1,0 +1,8 @@
+Machine learning is a branch of artificial intelligence.
+
+Supervised learning uses labelled data.
+
+Unsupervised learning works with unlabelled data.
+
+Reinforcement learning learns through interaction
+with an environment using rewards and penalties.

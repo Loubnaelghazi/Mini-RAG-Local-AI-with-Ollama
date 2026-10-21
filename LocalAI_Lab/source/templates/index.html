@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>FSTT Local AI Assistant</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 820px; margin: 2rem auto; padding: 0 1rem; color:#222; }
+  h1 { margin-bottom: .2rem; } .sub { color:#666; font-size:.9rem; margin-bottom:1rem; }
+  #chat { border:1px solid #ddd; border-radius:8px; padding:1rem; height:420px; overflow-y:auto; background:#fafafa; }
+  .msg { margin:.6rem 0; padding:.6rem .8rem; border-radius:8px; white-space:pre-wrap; }
+  .user { background:#e3f0ff; } .ai { background:#fff; border:1px solid #e5e5e5; }
+  .meta { font-size:.75rem; color:#777; margin-top:.3rem; }
+  form { display:flex; gap:.5rem; margin-top:1rem; } input[type=text] { flex:1; padding:.6rem; }
+  button { padding:.6rem 1rem; cursor:pointer; } label { font-size:.85rem; }
+</style>
+</head>
+<body>
+<h1>🎓 FSTT Local AI Assistant</h1>
+<div class="sub">Model: <b>{{ model }}</b> · Documents: {{ docs|join(", ") }} · Runs 100% locally</div>
+<div id="chat"></div>
+<form id="f">
+  <input type="text" id="q" placeholder="Ask a question about the course..." autocomplete="off" autofocus>
+  <button type="submit">Ask</button>
+  <button type="button" id="reset">Reset</button>
+</form>
+<label><input type="checkbox" id="struct"> Structured response (JSON)</label>
+
+<script>
+const chat = document.getElementById("chat");
+function add(cls, text, meta) {
+  const d = document.createElement("div"); d.className = "msg " + cls; d.textContent = text;
+  if (meta) { const m = document.createElement("div"); m.className = "meta"; m.textContent = meta; d.appendChild(m); }
+  chat.appendChild(d); chat.scrollTop = chat.scrollHeight; return d;
+}
+document.getElementById("f").onsubmit = async (e) => {
+  e.preventDefault();
+  const q = document.getElementById("q"); const question = q.value.trim(); if (!question) return;
+  q.value = ""; add("user", question);
+  const wait = add("ai", "…thinking…");
+  try {
+    const r = await fetch("/ask", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({question, structured: document.getElementById("struct").checked})});
+    const j = await r.json(); wait.remove();
+    if (j.error) { add("ai", "⚠️ " + j.error); return; }
+    const text = j.structured ? JSON.stringify(j.structured, null, 2) : j.answer;
+    const src = j.sources.map(s => s.doc).join(", ") || "none";
+    add("ai", text, `⏱ ${j.seconds}s · ${j.tokens ?? "?"} tokens · ${j.tokens_per_s ?? "?"} tok/s · sources: ${src}`);
+  } catch (err) { wait.remove(); add("ai", "⚠️ " + err); }
+};
+document.getElementById("reset").onclick = async () => { await fetch("/reset", {method:"POST"}); chat.innerHTML = ""; };
+</script>
+</body>
+</html>
