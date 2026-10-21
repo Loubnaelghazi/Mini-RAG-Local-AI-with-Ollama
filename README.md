@@ -1,130 +1,104 @@
-# Mini-RAG-Local-AI-with-Ollama
+# Mini-RAG: Local AI with Ollama
 
-A local AI assistant built with Python, Flask, and Ollama. The goal of this project is to explore how large language models (LLMs) can run directly on a personal computer without depending on external AI APIs.
+A local course assistant built with Python, Flask, and Ollama. It combines a locally running language model with document retrieval, conversation history, and structured JSON responses.
 
-Beyond running a language model locally, the project focuses on building a practical application that can answer questions, remember conversations, retrieve information from documents, and provide structured responses.
+**Author:** Loubna El Ghazi
 
-## Project Overview
+## Overview
 
-This project started as a practical exploration of local AI and gradually evolved into a document-based AI assistant.
+This project explores how to build an AI application without relying on a cloud inference API.
 
-The main idea is simple: instead of sending requests to a cloud service, the application communicates with an LLM running locally through Ollama.
+Ollama runs the language model locally, while a Python backend retrieves relevant course content and includes it in the model’s input. A Flask interface displays answers, retrieved sources, and performance measurements.
 
-The project covers several aspects of working with local models, including prompt engineering, model comparison, conversation memory, document retrieval, and performance evaluation.
+The accompanying laboratory experiments cover prompt design, code generation, model comparison, document grounding, and optional image analysis.
 
 ## Features
 
-- **Local LLM inference:** Run language models directly on a local machine using Ollama.
-- **Web interface:** Interact with the assistant through a simple Flask application.
-- **Conversation memory:** Maintain previous messages to support follow-up questions.
-- **Document-based Q&A:** Ask questions about locally stored course materials.
-- **Mini-RAG pipeline:** Retrieve relevant document content using a TF-IDF-based approach before generating answers.
-- **Structured responses:** Generate JSON outputs using predefined schemas.
-- **Model comparison:** Compare different local models based on response quality, execution time, and resource consumption.
-- **Performance monitoring:** Measure response time, generated tokens, and inference speed.
-- **Code assistance:** Experiment with code generation, debugging, and code review.
-- **Multimodal experiments (optional):** Explore image understanding using a compatible vision model.
+- **Local inference:** Generate responses through a locally running Ollama server.
+- **Flask interface:** Ask questions through a browser.
+- **Conversation history:** Include the last six user/assistant pairs in subsequent requests.
+- **Document-based answers:** Retrieve relevant information from local course files.
+- **Mini-RAG:** Use keyword retrieval with TF-IDF-style weighting.
+- **Structured output:** Request JSON responses using a predefined schema.
+- **Source visibility:** Display retrieved document names and relevance scores.
+- **Performance measurements:** Record response time, token counts, and generation speed.
+- **Conversation reset:** Clear the application’s stored history.
+
+Additional notebook experiments demonstrate code assistance and image understanding with a compatible multimodal model.
 
 ## Tech Stack
 
 | Technology | Purpose |
 |---|---|
-| Python | Core application logic |
-| Ollama | Local LLM management and inference |
-| Qwen / Gemma | Language models used for experimentation |
-| Flask | Web application and backend |
-| REST API | Communication with the local Ollama server |
-| TF-IDF | Document retrieval |
-| HTML, CSS, JavaScript | Web interface |
-| Pandas / Matplotlib | Benchmark analysis and visualization |
-| psutil | System resource monitoring |
+| Python | Application logic and experiments |
+| Ollama | Local model management and inference |
+| Qwen3.5:4b / Gemma3:4b | Models used in the comparison |
+| Flask | Web application and HTTP endpoints |
+| requests | Communication with Ollama |
+| Keyword retrieval | Document ranking with TF-IDF-style weights |
+| HTML, CSS, JavaScript | Browser interface |
+| pandas / Matplotlib | Benchmark analysis and charts |
+| psutil | System RAM measurements |
 
 ## How It Works
 
-The assistant combines a local language model with a lightweight document retrieval system.
+1. The user submits a question through the browser.
+2. Flask searches the local documents and selects the two highest-ranked relevant results.
+3. The backend combines the retrieved context, system instructions, and recent conversation history.
+4. Ollama runs the selected local model.
+5. Flask returns the answer, sources, response time, and available generation metrics.
 
-When a user submits a question, the application searches the available documents for relevant information. The retrieved text is then included in the prompt sent to Ollama.
-
-The language model uses this context to generate a response, which is displayed in the web interface.
-
-**Application flow:**
-
-```text
-User
-  |
-  v
-Flask Web Interface
-  |
-  v
-Python Backend
-  |
-  +----> Conversation History
-  |
-  +----> Local Document Retriever
-  |             |
-  |             v
-  |       Relevant Context
-  |             |
-  +-------------+
-  |
-  v
-Ollama REST API
-  |
-  v
-Local Language Model
-  |
-  v
-Generated Response
-  |
-  v
-Web Interface
+```mermaid
+flowchart TD
+    U["Browser interface"] --> F["Flask backend"]
+    D["Local documents"] --> R["Keyword retriever"]
+    R --> F
+    H["Conversation history"] --> F
+    F --> O["Ollama API and local model"]
+    O --> F
+    F --> U
 ```
 
-The document retrieval component uses a lightweight TF-IDF approach rather than a vector database. This keeps the implementation simple and makes it easier to understand how Retrieval-Augmented Generation works.
+The retriever does not use a vector database. It ranks documents using overlapping terms and inverse-document-frequency weights.
+
+The model is instructed to answer from the supplied context and return **“Information not available.”** when the answer is absent.
 
 ## Project Structure
 
-```text
-LocalAI_Lab/
-|
-├── source/
-│   ├── app.py
-│   ├── chatbot.py
-│   ├── rag.py
-│   ├── benchmark.py
-│   └── templates/
-│       └── index.html
-|
-├── documents/
-│   ├── ai.txt
-│   ├── ml.txt
-│   ├── rl.txt
-│   └── ...
-|
-├── screenshots/
-│
-├── report.pdf
-└── README.md
-```
+| Path | Description |
+|---|---|
+| `LocalAI_Lab/source/app.py` | Flask assistant with RAG and conversation history |
+| `LocalAI_Lab/source/chatbot.py` | Console chatbot |
+| `LocalAI_Lab/source/rag.py` | Document loading, retrieval, and prompt construction |
+| `LocalAI_Lab/source/benchmark.py` | Model performance benchmark |
+| `LocalAI_Lab/source/templates/index.html` | Web interface |
+| `LocalAI_Lab/documents/` | Local course materials |
+| `LocalAI_Lab/screenshots/` | Screenshots documenting the experiments |
+| `LocalAI_Lab/report.pdf` | Laboratory report |
+| `LocalAI_Lab/README.md` | Project documentation |
+
+The document collection includes:
+
+- `ai.txt`
+- `course.txt`
+- `deep_learning.txt`
+- `machine_learning.txt`
+- `reinforcement_learning.txt`
 
 ## Getting Started
 
 ### 1. Prerequisites
 
-Make sure you have the following installed:
-
 - Python 3.10 or newer
 - Ollama
 - pip
-- At least 8 GB RAM recommended, depending on the model
+- Enough RAM, storage, and optionally VRAM for the selected model
 
-A dedicated GPU can improve inference performance, but it is not required.
+A dedicated GPU can improve performance but is not required. Memory requirements depend on the model, quantization, and context length.
 
-### 2. Install Ollama
+### 2. Install and Start Ollama
 
-Download Ollama from:
-
-https://ollama.com/download
+Download Ollama from [ollama.com/download](https://ollama.com/download).
 
 For Linux:
 
@@ -132,100 +106,200 @@ For Linux:
 curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-Verify the installation:
+Verify installation:
 
 ```bash
 ollama --version
 ```
 
-Start the Ollama service if it is not already running:
+If the service is not already running:
 
 ```bash
 ollama serve
 ```
 
-### 3. Download the Models
+Keep Ollama running while using the application.
 
-Download the models used in the experiments:
+### 3. Download the Tested Models
 
 ```bash
-ollama pull qwen3.5
-ollama pull gemma3
+ollama pull qwen3.5:4b
+ollama pull gemma3:4b
 ```
 
-The models can be replaced with smaller alternatives depending on the available hardware.
-
-Check downloaded models:
+Check available models:
 
 ```bash
 ollama list
 ```
 
+The model names must match the installed tags exactly.
+
 ### 4. Install Python Dependencies
 
+From the folder containing `LocalAI_Lab`:
+
 ```bash
-pip install flask requests pandas matplotlib psutil
+cd LocalAI_Lab
+python -m venv .venv
 ```
 
-### 5. Run the Application
-
-Navigate to the source directory:
+Activate the environment on Linux/macOS:
 
 ```bash
-cd LocalAI_Lab/source
+source .venv/bin/activate
 ```
 
-Start the Flask server:
+On Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Install dependencies:
 
 ```bash
+python -m pip install flask requests pandas matplotlib psutil
+```
+
+### 5. Run the Web Application
+
+From `LocalAI_Lab`:
+
+```bash
+cd source
+```
+
+Set the model on Linux/macOS:
+
+```bash
+export MODEL="qwen3.5:4b"
 python app.py
 ```
 
-Open the application in your browser:
+On Windows PowerShell:
 
-http://127.0.0.1:5001
+```powershell
+$env:MODEL = "qwen3.5:4b"
+python app.py
+```
 
-The assistant should now be accessible locally.
+Open:
+
+**http://127.0.0.1:5001**
+
+To use Gemma instead, set `MODEL` to `gemma3:4b` and restart the application.
+
+Stop the server with `Ctrl+C`.
+
+### Configuration
+
+| Variable | Purpose | Application default |
+|---|---|---|
+| `MODEL` | Exact installed model name | `qwen3.5` |
+| `OLLAMA_URL` | Ollama server address | `http://localhost:11434` |
+| `PORT` | Flask application port | `5001` |
+
+Set `MODEL=qwen3.5:4b` explicitly to reproduce the tested configuration.
+
+## Example Questions
+
+- What is reinforcement learning?
+- And how is it different from supervised learning?
+- Summarize deep learning.
+- What is quantum computing?
+
+The last question is outside the supplied course content and should produce **“Information not available.”**
+
+Enable the interface’s structured-output option to request a JSON response containing:
+
+- `topic`
+- `summary`
+- `key_points`
+- `difficulty`
 
 ## Additional Experiments
 
 ### Console Chatbot
 
-The project also includes a command-line chatbot with conversation history.
+From `LocalAI_Lab/source`:
 
 ```bash
 python chatbot.py
 ```
 
-### Model Benchmarking
+The supplied console script uses `qwen3.5:4b`. Edit its `MODEL` constant if using another installed model.
 
-To compare two local models:
+Type `exit` to stop.
+
+### Model Benchmark
+
+From `LocalAI_Lab/source`:
 
 ```bash
-python benchmark.py qwen3.5 gemma3
+python benchmark.py qwen3.5:4b gemma3:4b
 ```
 
-The benchmark is designed to explore differences in inference speed, memory requirements, and response quality.
+The benchmark uses the prompt:
 
-Actual performance depends on the selected models and the hardware used.
+> Write a 500-word explanation of reinforcement learning.
 
-### Document Retrieval
+It requests model unloading before each run and records:
 
-The RAG module retrieves relevant information from text files stored in the `documents/` directory.
+- Model disk size
+- Loaded size and VRAM allocation
+- Model load time
+- Total request time
+- Generated tokens
+- Generation throughput
+- System RAM usage
 
-The assistant is instructed to answer using the provided context and indicate when the requested information is unavailable.
+**Answer quality is rated manually.** The benchmark script does not automatically assess correctness or retain answer text in its original implementation.
 
-This helps reduce unsupported answers, although it does not completely eliminate hallucinations.
+### Recorded Results
 
+Latest recorded Part 16 run:
+
+| Metric | Qwen3.5:4b | Gemma3:4b |
+|---|---:|---:|
+| Disk size (GB) | 3.32 | 3.35 |
+| Loaded size (GB) | 3.14 | 2.88 |
+| VRAM (GB) | 3.14 | 2.88 |
+| Load time (s) | 35.11 | 7.97 |
+| Response time (s) | 47.25 | 20.03 |
+| Generated tokens | 731 | 800 |
+| Generation speed (tokens/s) | 61.39 | 67.56 |
+| System RAM used (%) | 48.2 | 58.8 |
+
+These are single-run measurements on the laboratory machine. System RAM percentages include other processes and do not represent isolated model memory usage.
+
+In the programming exercise, both generated primality functions matched a reference implementation for all 2,005 integers from −5 to 1,999.
+
+## Limitations
+
+- Keyword retrieval may miss synonyms or ambiguous follow-up questions.
+- Conversation history is stored in process memory for a **single-user demonstration**.
+- The backend sends the last six conversation pairs, but the stored history list grows until reset or restart.
+- Restarting the application clears conversation history.
+- RAG reduces unsupported answers but does not eliminate hallucinations.
+- Valid JSON does not guarantee factually correct content.
+- Performance depends on hardware, model settings, context length, and other running processes.
+- Optional vision experiments belong to the notebook and are not part of the final web interface.
+
+## Security
+
+The Flask application binds to `127.0.0.1` with debugging disabled.
+
+Keep Ollama and the application local unless remote access is required. For remote deployment, use authentication, TLS, firewall restrictions, and separate conversation state for each user.
+
+Retrieved documents should be treated as untrusted input because they may contain prompt-injection instructions.
 
 ## Conclusion
 
-This project demonstrates how a local language model can be integrated into a complete Python application.
+This project demonstrates how to combine Ollama, Flask, local document retrieval, conversation history, and structured output into a practical course assistant.
 
-By combining Ollama, Flask, conversation history, and document retrieval, it provides a foundation for building AI assistants that operate locally without requiring a cloud inference service.
+The experiments show that model selection should consider measured latency, memory requirements, and verified answer quality. Reliable application behavior also depends on retrieval, validation, and careful management of conversation state.
 
-It also highlights the practical trade-offs involved in choosing and deploying language models on consumer hardware.
+## Purpose
 
-## License
-
-Created for educational and experimental purposes.
+Created by **Loubna El Ghazi** for educational and experimental purposes.
